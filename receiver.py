@@ -9,7 +9,7 @@ def read_available_messages(sender_name):
     global terminate_reader  # Allow the thread to access the flag
 
     while not terminate_reader:
-        cursor.execute('SELECT SENDER_NAME, MESSAGE, SENT_TIME FROM ASYNC_MESSAGES WHERE RECEIVED_TIME IS NULL AND SENDER_NAME != %s LIMIT 1',
+        cursor.execute('SELECT SENDER_NAME, MESSAGE, SENT_TIME FROM ASYNC_MESSAGES WHERE RECEIVED_TIME IS NULL AND SENDER_NAME = %s LIMIT 1',
                        (sender_name,))
         message = cursor.fetchone()
 
@@ -41,9 +41,11 @@ print("Receiver is listening...")  # Display a listening message
 reader_thread = threading.Thread(target=read_available_messages, args=(sender_name,))
 reader_thread.start()
 
-# Allow the thread to run for a certain time (e.g., 60 seconds)
-time.sleep(60)
+# Allow the thread to run, but add an option to stop it
+print("Press 'q' and Enter to stop the receiver.")
+while not terminate_reader:
+    user_input = input()
+    if user_input.lower() == 'q':
+        terminate_reader = True
 
-# Set the terminate_reader flag to stop the thread
-terminate_reader = True
 reader_thread.join()  # Wait for the thread to finish
