@@ -1,31 +1,49 @@
 import psycopg2
+import threading
 import time
 
-# Database connection details for your single database server
-db_server_ip = "127.0.0.1"  # Replace with your database server's IP
+# Flag to control the reader thread
+terminate_reader = False
 
-# Function to read and update messages
-def read_and_update_message():
-    conn = psycopg2.connect(host=db_server_ip, user="postgres", database="hw2")
-    cursor = conn.cursor()
+def read_available_messages(sender_name):
+    global terminate_reader  # Allow the thread to access the flag
 
-    while True:
-        cursor.execute("""
-            SELECT * FROM ASYNC_MESSAGES
-            WHERE RECEIVED_TIME IS NULL
-            LIMIT 1
-            FOR UPDATE
-        """)
+    while not terminate_reader:
+        cursor.execute('SELECT SENDER_NAME, MESSAGE, SENT_TIME FROM ASYNC_MESSAGES WHERE RECEIVED_TIME IS NULL AND SENDER_NAME != %s LIMIT 1',
+                       (sender_name,))
         message = cursor.fetchone()
 
         if message:
-            sender_name, msg, sent_time = message[1], message[2], message[3]
-            print(f"Sender {sender_name} sent '{msg}' at time {sent_time}.")
-            current_time = time.strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute("UPDATE ASYNC_MESSAGES SET RECEIVED_TIME = %s WHERE RECORD_ID = %s", (current_time, message[0]))
+            sender, message_text, sent_time = message
+            received_time = time.strftime('%Y-%m-%d %H:%M:%S')
+            print(f'Sender {sender} sent "{message_text}" at time {sent_time}')
+            cursor.execute('UPDATE ASYNC_MESSAGES SET RECEIVED_TIME = %s WHERE SENDER_NAME = %s AND RECEIVED_TIME IS NULL',
+                           (received_time, sender))
             conn.commit()
 
-    conn.close()
+        time.sleep(1)  # Adjust the interval as needed
 
-# Start the reader
-read_and_update_message()
+# Create a PostgreSQL database connection
+conn = psycopg2.connect(
+    dbname='hw2',
+    user='postgres',
+    password='1234',
+    host='127.0.0.1',
+    port='5432'
+)
+cursor = conn.cursor()
+
+# Define the sender_name variable or retrieve it from the sender
+sender_name = 'Narmina'
+
+print("Receiver is listening...")  # Display a listening message
+
+reader_thread = threading.Thread(target=read_available_messages, args=(sender_name,))
+reader_thread.start()
+
+# Allow the thread to run for a certain time (e.g., 60 seconds)
+time.sleep(60)
+
+# Set the terminate_reader flag to stop the thread
+terminate_reader = True
+reader_thread.join()  # Wait for the thread to finish
