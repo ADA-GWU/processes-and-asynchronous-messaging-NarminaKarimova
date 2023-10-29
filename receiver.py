@@ -38,7 +38,7 @@ for ip in db_server_ips:
     connections.append(conn)
 
 # Define your sender_name
-sender_name = 'Narmina'
+sender_name = 'Shamsiyya'
 
 # Create threads for reading and processing messages
 reader_threads = []
