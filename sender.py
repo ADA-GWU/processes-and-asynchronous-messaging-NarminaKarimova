@@ -56,4 +56,3 @@ for conn in connections:
     conn.close()
 
 
-
