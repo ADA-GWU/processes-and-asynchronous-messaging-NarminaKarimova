@@ -30,7 +30,7 @@ for ip in db_server_ips:
     connections.append(conn)
 
 # Define your sender_name
-sender_name = 'Shamsiyya'
+sender_name = 'Narmina'
 
 def user_input_loop():
     while True:
