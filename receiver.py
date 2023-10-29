@@ -26,9 +26,9 @@ def read_available_messages(sender_name):
 # Create a PostgreSQL database connection
 conn = psycopg2.connect(
     dbname='hw2',
-    user='postgres',
+    user='narminakarimova',
     password='1234',
-    host='127.0.0.1',
+    host='192.168.0.108',
     port='5432'
 )
 cursor = conn.cursor()

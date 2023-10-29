@@ -14,9 +14,9 @@ threads = []
 
 # Create a PostgreSQL database connection
 conn = psycopg2.connect(
-    host="localhost",
+    host="192.168.0.108",
     database="hw2",
-    user="postgres",
+    user="narminakarimova",
     password="1234")
 cursor = conn.cursor()
 
