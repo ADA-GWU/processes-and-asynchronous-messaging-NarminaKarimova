@@ -22,7 +22,7 @@ cursor = conn.cursor()
 
 for i in range(num_threads):
     sender_name = 'Narmina'
-    thread = threading.Thread(target=send_message, args=(sender_name, 'user_input'))
+    thread = threading.Thread(target=send_message, args=(sender_name, 'connection is established'))
     threads.append(thread)
     thread.start()
 
