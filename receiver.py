@@ -2,68 +2,66 @@ import psycopg2
 import threading
 import time
 
-# Flag to control the reader threads
-terminate_reader = False
-
+# Function to read and process available messages
 def read_available_messages(sender_name, conn):
-    global terminate_reader
     cursor = conn.cursor()
 
-    while not terminate_reader:
+    while True:
         try:
-            cursor.execute('SELECT SENDER_NAME, MESSAGE, SENT_TIME FROM ASYNC_MESSAGES WHERE RECEIVED_TIME IS NULL AND SENDER_NAME = %s LIMIT 1',
+            cursor.execute('SELECT RECORD_ID, SENDER_NAME, MESSAGE, SENT_TIME FROM ASYNC_MESSAGES WHERE RECEIVED_TIME IS NULL AND SENDER_NAME != %s LIMIT 1 FOR UPDATE',
                            (sender_name,))
             message = cursor.fetchone()
 
             if message:
-                sender, message_text, sent_time = message
+                record_id, sender, message_text, sent_time = message
                 received_time = time.strftime('%Y-%m-%d %H:%M:%S')
                 print(f'Sender {sender} sent "{message_text}" at time {sent_time}')
-                cursor.execute('UPDATE ASYNC_MESSAGES SET RECEIVED_TIME = %s WHERE SENDER_NAME = %s AND RECEIVED_TIME IS NULL',
-                               (received_time, sender))
+                cursor.execute('UPDATE ASYNC_MESSAGES SET RECEIVED_TIME = %s WHERE RECORD_ID = %s',
+                               (received_time, record_id))
                 conn.commit()
-
-            time.sleep(1)
         except psycopg2.Error as e:
             print(f"Error: {e}")
 
-# Replace 'server1_ip', 'server2_ip', etc. with actual IP addresses
+# Define the list of database server IPs here
 db_server_ips = ['127.0.0.1', '192.168.0.108']
 connections = []
 
 # Create connections to each database server
 for ip in db_server_ips:
     conn = psycopg2.connect(
-        dbname='db',
-        user='narminakarimova',
-        password='1234',
         host=ip,
-        port='5432'
+        database="db",
+        user="narminakarimova",
+        password="1234",
+        port="5432"
     )
     connections.append(conn)
 
-# Define the sender_name variable or retrieve it from the sender
-sender_name = 'Shamsiyya'
+# Define your sender_name
+sender_name = 'Narmina'
 
-print("Reader is listening...")
+# Create threads for reading and processing messages
 reader_threads = []
-
 for conn in connections:
     reader_thread = threading.Thread(target=read_available_messages, args=(sender_name, conn))
     reader_threads.append(reader_thread)
     reader_thread.start()
 
+# Wait for user input to stop
 print("Press 'q' and Enter to stop the reader threads.")
-while not terminate_reader:
+while True:
     user_input = input()
     if user_input.lower() == 'q':
-        terminate_reader = True
+        break
 
+# Stop the reader threads
 for reader_thread in reader_threads:
     reader_thread.join()
 
+# Close all database connections when done
 for conn in connections:
     conn.close()
+
 """import psycopg2
 import threading
 import time
