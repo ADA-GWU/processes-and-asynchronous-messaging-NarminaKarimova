@@ -1,4 +1,4 @@
-Asynchronous Messaging with Sender and Receiver (macOS)
+Asynchronous Messaging with Sender and Receiver
 
 Welcome to the Asynchronous Messaging project! This README provides step-by-step instructions on how to download, configure, and run the sender and receiver scripts on macOS. This system allows you to send and receive messages across multiple PostgreSQL databases simultaneously.
 
