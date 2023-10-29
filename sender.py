@@ -34,7 +34,7 @@ sender_name = 'Narmina'
 
 def user_input_loop():
     while True:
-        user_input = input("Enter a message (or 'exit' to quit): ")
+        user_input = input("Enter a message (or 'q' to quit): ")
         if user_input.lower() == 'q':
             break
         # Choose a random connection
